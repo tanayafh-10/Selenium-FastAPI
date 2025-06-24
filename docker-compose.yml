@@ -1,0 +1,31 @@
+version: '3'
+services:
+  selenoid:
+    image: aerokube/selenoid:latest-release
+    container_name: selenoid
+    ports:
+      - "4444:4444"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./config/:/etc/selenoid/"
+      - "./video/:/opt/selenoid/video/"
+    command: [
+      "-limit", "5",
+      "-timeout", "3m",
+      "-video-output-dir", "/opt/selenoid/video/"
+    ]
+
+  selenoid-ui:
+    image: aerokube/selenoid-ui
+    container_name: selenoid-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - SELENOID_URI=http://selenoid:4444
+
+  fastapi:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - selenoid
